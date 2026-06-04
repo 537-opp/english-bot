@@ -16,7 +16,7 @@ const cors = require('cors');
 const app = express();
 app.use(cors());
 app.use(express.json());
-const { initDb, getWords, addWord, deleteWord, getActiveDays, markDay } = require('./db');
+const { initDb, getWords, addWord, deleteWord, getActiveDays, markDay, upsertUser, getAllUsers } = require('./db');
 initDb();
 
 app.get('/words/:telegramId', async (req, res) => {
@@ -205,7 +205,8 @@ bot.on('callback_query', async (query) => {
 bot.on('message', async (msg) => {
   const chatId = msg.chat.id;
   const text = msg.text;
-
+// Сохраняем пользователя
+await upsertUser(String(chatId), msg.from.first_name, msg.from.username);
   if (!text || text.startsWith('/')) return;
 
   const session = getSession(chatId);
@@ -246,5 +247,42 @@ bot.on('message', async (msg) => {
     bot.sendMessage(chatId, '😔 Что-то пошло не так. Попробуй ещё раз!');
   }
 });
+const schedule = require('node-cron');
 
+schedule.schedule('0 14 * * *', async () => {
+  // 14:00 UTC = 19:00 по Варшаве
+  console.log('📬 Отправляем напоминания...');
+  
+  const users = await getAllUsers();
+  const today = new Date().toISOString().split('T')[0];
+
+  for (const user of users) {
+    try {
+      const activeDays = await getActiveDays(user.telegram_id);
+      const studiedToday = activeDays.includes(today);
+      
+      if (studiedToday) continue; // уже занимался сегодня — не беспокоим
+
+      const words = await getWords(user.telegram_id);
+      const firstName = user.first_name || 'друг';
+
+      if (words.length === 0) {
+        await bot.sendMessage(user.telegram_id,
+          `👋 Привет, ${firstName}! Попробуй добавить первые слова в словарь — я помогу их запомнить! 📖`,
+          getMainMenu()
+        );
+      } else {
+        const randomWords = words.sort(() => 0.5 - Math.random()).slice(0, 3);
+        const wordList = randomWords.map(w => `• ${w.word_en} — ${w.word_ru}`).join('\n');
+        
+        await bot.sendMessage(user.telegram_id,
+          `Hey ${firstName}! 👋 Давно не практиковались — давай повторим?\n\nВот несколько слов из твоего словаря:\n${wordList}\n\nОткрой приложение и потренируйся на флэшкардах! 🃏`,
+          getMainMenu()
+        );
+      }
+    } catch(e) {
+      console.error(`Ошибка отправки для ${user.telegram_id}:`, e.message);
+    }
+  }
+});
 console.log('🤖 Бот запущен!');

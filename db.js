@@ -25,6 +25,14 @@ async function initDb() {
     )
   `);
 
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      telegram_id TEXT PRIMARY KEY,
+      username TEXT,
+      first_name TEXT,
+      last_seen TIMESTAMP DEFAULT NOW()
+    )
+  `);
   console.log('✅ База данных готова');
 }
 
@@ -64,5 +72,17 @@ async function markDay(telegramId, day) {
     [telegramId, day]
   );
 }
+async function upsertUser(telegramId, firstName, username) {
+  await pool.query(
+    `INSERT INTO users (telegram_id, first_name, username, last_seen) 
+     VALUES ($1, $2, $3, NOW()) 
+     ON CONFLICT (telegram_id) DO UPDATE SET last_seen = NOW(), first_name = $2`,
+    [telegramId, firstName, username]
+  );
+}
 
-module.exports = { initDb, getWords, addWord, deleteWord, getActiveDays, markDay };
+async function getAllUsers() {
+  const result = await pool.query('SELECT * FROM users');
+  return result.rows;
+}
+module.exports = { initDb, getWords, addWord, deleteWord, getActiveDays, markDay, upsertUser, getAllUsers };
