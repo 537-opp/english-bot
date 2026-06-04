@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>English Helper</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0f0f13;
+    --surface: #1a1a24;
+    --surface2: #22222f;
+    --accent: #6c63ff;
+    --accent2: #a78bfa;
+    --green: #4ade80;
+    --text: #f0f0f5;
+    --text2: #9090a8;
+    --radius: 14px;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    min-height: 100vh;
+    padding-bottom: 80px;
+  }
+
+  /* NAV */
+  .nav {
+    display: flex;
+    background: var(--surface);
+    border-bottom: 1px solid #ffffff0f;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .nav-btn {
+    flex: 1;
+    padding: 14px 8px;
+    background: none;
+    border: none;
+    color: var(--text2);
+    font-size: 11px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    transition: color 0.2s;
+  }
+  .nav-btn.active { color: var(--accent2); }
+  .nav-btn svg { width: 22px; height: 22px; }
+
+  /* PAGES */
+  .page { display: none; padding: 20px 16px; }
+  .page.active { display: block; }
+
+  /* HEADER */
+  .page-header {
+    margin-bottom: 24px;
+  }
+  .page-header h1 {
+    font-size: 24px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .page-header p {
+    color: var(--text2);
+    font-size: 13px;
+    margin-top: 4px;
+  }
+
+  /* CARDS */
+  .card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 12px;
+    border: 1px solid #ffffff08;
+  }
+
+  /* CALENDAR */
+  .calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .calendar-header h2 {
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .cal-nav {
+    display: flex;
+    gap: 8px;
+  }
+  .cal-nav button {
+    background: var(--surface2);
+    border: none;
+    color: var(--text);
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+  .weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 6px;
+  }
+  .weekday {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text2);
+    padding: 4px 0;
+  }
+  .days-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+  }
+  .day {
+    aspect-ratio: 1;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: var(--text2);
+    background: var(--surface2);
+    transition: all 0.2s;
+  }
+  .day.active-day {
+    background: var(--green);
+    color: #000;
+    font-weight: 600;
+  }
+  .day.today {
+    border: 2px solid var(--accent2);
+    color: var(--text);
+  }
+  .day.empty { background: transparent; }
+
+  /* STATS ROW */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 14px 10px;
+    text-align: center;
+    border: 1px solid #ffffff08;
+  }
+  .stat-num {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--accent2);
+  }
+  .stat-label {
+    font-size: 11px;
+    color: var(--text2);
+    margin-top: 2px;
+  }
+
+  /* DICTIONARY */
+  .add-word-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .input-row {
+    display: flex;
+    gap: 8px;
+  }
+  input, textarea {
+    background: var(--surface2);
+    border: 1px solid #ffffff10;
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 14px;
+    padding: 12px 14px;
+    outline: none;
+    transition: border 0.2s;
+    width: 100%;
+  }
+  input:focus, textarea:focus {
+    border-color: var(--accent);
+  }
+  input::placeholder, textarea::placeholder {
+    color: var(--text2);
+  }
+  .btn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+  }
+  .btn:active { opacity: 0.8; }
+  .btn-outline {
+    background: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent2);
+  }
+  .btn-sm {
+    padding: 6px 12px;
+    font-size: 12px;
+    border-radius: 8px;
+  }
+
+  .word-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    border: 1px solid #ffffff08;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .word-en {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .word-ru {
+    font-size: 13px;
+    color: var(--text2);
+    margin-top: 2px;
+  }
+  .word-actions {
+    display: flex;
+    gap: 6px;
+  }
+  .btn-icon {
+    background: var(--surface2);
+    border: none;
+    color: var(--text2);
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .empty-state {
+    text-align: center;
+    color: var(--text2);
+    padding: 40px 20px;
+    font-size: 14px;
+  }
+  .empty-state div { font-size: 40px; margin-bottom: 12px; }
+
+  /* FLASHCARDS */
+  .flashcard-wrap {
+    perspective: 1000px;
+    margin: 20px 0;
+  }
+  .flashcard {
+    width: 100%;
+    min-height: 200px;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.5s;
+    cursor: pointer;
+  }
+  .flashcard.flipped { transform: rotateY(180deg); }
+  .card-front, .card-back {
+    position: absolute;
+    width: 100%;
+    min-height: 200px;
+    backface-visibility: hidden;
+    border-radius: var(--radius);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px 20px;
+    text-align: center;
+  }
+  .card-front {
+    background: linear-gradient(135deg, var(--accent), #4f46e5);
+  }
+  .card-back {
+    background: linear-gradient(135deg, #059669, #047857);
+    transform: rotateY(180deg);
+  }
+  .card-word {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .card-hint {
+    font-size: 13px;
+    opacity: 0.7;
+  }
+  .flashcard-controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+  }
+  .flashcard-controls .btn { flex: 1; text-align: center; }
+  .progress-bar {
+    background: var(--surface2);
+    border-radius: 999px;
+    height: 6px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 999px;
+    transition: width 0.3s;
+  }
+
+  /* TRANSLATOR */
+  .translator-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .lang-label {
+    font-size: 11px;
+    color: var(--text2);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  textarea {
+    resize: none;
+    height: 120px;
+  }
+  .translate-result {
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 14px;
+    min-height: 80px;
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .translate-result.placeholder {
+    color: var(--text2);
+  }
+  .btn-translate {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    width: 100%;
+  }
+  .save-translation-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <button class="nav-btn active" onclick="showPage('home')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Главная
+  </button>
+  <button class="nav-btn" onclick="showPage('dictionary')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+    Словарь
+  </button>
+  <button class="nav-btn" onclick="showPage('flashcards')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+    Карточки
+  </button>
+  <button class="nav-btn" onclick="showPage('translator')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8l6 6"/><path d="M4 14l6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="M22 22l-5-10-5 10"/><path d="M14 18h6"/></svg>
+    Перевод
+  </button>
+</nav>
+
+<!-- HOME -->
+<div class="page active" id="page-home">
+  <div class="page-header">
+    <h1>English Helper</h1>
+    <p>Твой прогресс в изучении английского</p>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-num" id="stat-words">0</div>
+      <div class="stat-label">Слов в словаре</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="stat-streak">0</div>
+      <div class="stat-label">Дней подряд</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="stat-days">0</div>
+      <div class="stat-label">Всего дней</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="calendar-header">
+      <h2 id="cal-title"></h2>
+      <div class="cal-nav">
+        <button onclick="changeMonth(-1)">‹</button>
+        <button onclick="changeMonth(1)">›</button>
+      </div>
+    </div>
+    <div class="weekdays">
+      <div class="weekday">Пн</div>
+      <div class="weekday">Вт</div>
+      <div class="weekday">Ср</div>
+      <div class="weekday">Чт</div>
+      <div class="weekday">Пт</div>
+      <div class="weekday">Сб</div>
+      <div class="weekday">Вс</div>
+    </div>
+    <div class="days-grid" id="days-grid"></div>
+  </div>
+</div>
+
+<!-- DICTIONARY -->
+<div class="page" id="page-dictionary">
+  <div class="page-header">
+    <h1>Словарь</h1>
+    <p>Твои сохранённые слова</p>
+  </div>
+
+  <div class="add-word-form">
+    <div class="input-row">
+      <input type="text" id="input-en" placeholder="Слово на английском">
+      <input type="text" id="input-ru" placeholder="Перевод">
+    </div>
+    <button class="btn" onclick="addWord()">+ Добавить слово</button>
+  </div>
+
+  <div id="words-list"></div>
+</div>
+
+<!-- FLASHCARDS -->
+<div class="page" id="page-flashcards">
+  <div class="page-header">
+    <h1>Флэшкарты</h1>
+    <p>Нажми на карточку чтобы перевернуть</p>
+  </div>
+
+  <div id="flashcards-content"></div>
+</div>
+
+<!-- TRANSLATOR -->
+<div class="page" id="page-translator">
+  <div class="page-header">
+    <h1>Переводчик</h1>
+    <p>AI перевод с объяснением</p>
+  </div>
+
+  <div class="translator-wrap">
+    <div>
+      <div class="lang-label">Введи текст</div>
+      <textarea id="translate-input" placeholder="Введи текст на русском или английском..."></textarea>
+    </div>
+    <button class="btn btn-translate" onclick="translateText()">🔤 Перевести</button>
+    <div>
+      <div class="lang-label">Перевод</div>
+      <div class="translate-result placeholder" id="translate-output">Результат появится здесь...</div>
+    </div>
+    <div class="save-translation-row" id="save-row" style="display:none">
+      <input type="text" id="save-word-en" placeholder="Английское слово">
+      <input type="text" id="save-word-ru" placeholder="Перевод">
+      <button class="btn btn-sm" onclick="saveFromTranslator()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+const API = 'https://english-bot-production-e369.up.railway.app';
+let TELEGRAM_ID = null;
+let words = [];
+let activeDays = [];
+let currentMonth = new Date().getMonth();
+let currentYear = new Date().getFullYear();
+let flashIndex = 0;
+
+// Получаем Telegram ID
+window.Telegram.WebApp.ready();
+const tgUser = window.Telegram.WebApp.initDataUnsafe?.user;
+if (tgUser) {
+  TELEGRAM_ID = String(tgUser.id);
+} else {
+  TELEGRAM_ID = 'test_user'; // для теста в браузере
+}
+
+async function loadData() {
+  try {
+    const [wordsRes, daysRes] = await Promise.all([
+      fetch(`${API}/words/${TELEGRAM_ID}`),
+      fetch(`${API}/days/${TELEGRAM_ID}`)
+    ]);
+    words = await wordsRes.json();
+    activeDays = await daysRes.json();
+    renderCalendar();
+    renderWords();
+  } catch(e) {
+    console.error('Ошибка загрузки:', e);
+  }
+}
+
+function save() {} // больше не нужен, данные на сервере
+
+async function markToday() {
+  const today = new Date().toISOString().split('T')[0];
+  if (!activeDays.includes(today)) {
+    activeDays.push(today);
+    await fetch(`${API}/days`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telegramId: TELEGRAM_ID, day: today })
+    });
+  }
+}
+
+// ===== NAVIGATION =====
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+
+  if (name === 'home') renderCalendar();
+  if (name === 'dictionary') renderWords();
+  if (name === 'flashcards') renderFlashcards();
+}
+
+// ===== CALENDAR =====
+function renderCalendar() {
+  const months = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+  document.getElementById('cal-title').textContent = months[currentMonth] + ' ' + currentYear;
+
+  const grid = document.getElementById('days-grid');
+  grid.innerHTML = '';
+
+  const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+  const offset = firstDay === 0 ? 6 : firstDay - 1;
+  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+  const today = new Date().toISOString().split('T')[0];
+
+  for (let i = 0; i < offset; i++) {
+    const el = document.createElement('div');
+    el.className = 'day empty';
+    grid.appendChild(el);
+  }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const el = document.createElement('div');
+    el.className = 'day';
+    el.textContent = d;
+    if (activeDays.includes(dateStr)) el.classList.add('active-day');
+    if (dateStr === today) el.classList.add('today');
+    grid.appendChild(el);
+  }
+
+  updateStats();
+}
+
+function changeMonth(dir) {
+  currentMonth += dir;
+  if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+  if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+  renderCalendar();
+}
+
+function updateStats() {
+  document.getElementById('stat-words').textContent = words.length;
+  document.getElementById('stat-days').textContent = activeDays.length;
+
+  let streak = 0;
+  const today = new Date();
+  for (let i = 0; i < 365; i++) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const s = d.toISOString().split('T')[0];
+    if (activeDays.includes(s)) streak++;
+    else break;
+  }
+  document.getElementById('stat-streak').textContent = streak;
+}
+
+// ===== DICTIONARY =====
+async function addWord() {
+  const en = document.getElementById('input-en').value.trim();
+  const ru = document.getElementById('input-ru').value.trim();
+  if (!en || !ru) return;
+
+  try {
+    await fetch(`${API}/words`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telegramId: TELEGRAM_ID, wordEn: en, wordRu: ru })
+    });
+    document.getElementById('input-en').value = '';
+    document.getElementById('input-ru').value = '';
+    await loadData();
+  } catch(e) {
+    alert('Ошибка сохранения');
+  }
+}
+
+async function deleteWord(id) {
+  try {
+    await fetch(`${API}/words/${TELEGRAM_ID}/${id}`, { method: 'DELETE' });
+    await loadData();
+  } catch(e) {
+    alert('Ошибка удаления');
+  }
+}
+
+function renderWords() {
+  const list = document.getElementById('words-list');
+  if (words.length === 0) {
+    list.innerHTML = '<div class="empty-state"><div>📖</div>Пока нет слов.<br>Добавь первое слово выше!</div>';
+    return;
+  }
+  list.innerHTML = words.map(w => `
+    <div class="word-card">
+      <div>
+        <div class="word-en">${w.word_en}</div>
+        <div class="word-ru">${w.word_ru}</div>
+      </div>
+      <div class="word-actions">
+        <button class="btn-icon" onclick="deleteWord(${w.id})">🗑</button>
+      </div>
+    </div>
+  `).join('');
+  updateStats();
+}
+
+// ===== FLASHCARDS =====
+function renderFlashcards() {
+  const el = document.getElementById('flashcards-content');
+  if (words.length === 0) {
+    el.innerHTML = '<div class="empty-state"><div>🃏</div>Сначала добавь слова в словарь!</div>';
+    return;
+  }
+
+  flashIndex = flashIndex % words.length;
+  const w = words[flashIndex];
+  const progress = ((flashIndex + 1) / words.length * 100).toFixed(0);
+
+  el.innerHTML = `
+    <div style="text-align:center; color:var(--text2); font-size:13px; margin-bottom:8px">
+      ${flashIndex + 1} / ${words.length}
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" style="width:${progress}%"></div>
+    </div>
+    <div class="flashcard-wrap">
+      <div class="flashcard" id="flashcard" onclick="flipCard()">
+        <div class="card-front">
+          <div class="card-word">${w.word_en}</div>
+          <div class="card-hint">Нажми чтобы увидеть перевод</div>
+        </div>
+        <div class="card-back">
+          <div class="card-word">${w.word_ru}</div>
+          <div class="card-hint">Нажми чтобы перевернуть</div>
+        </div>
+      </div>
+    </div>
+    <div class="flashcard-controls">
+      <button class="btn btn-outline" onclick="prevCard()">‹ Назад</button>
+      <button class="btn" onclick="nextCard()">Вперёд ›</button>
+    </div>
+  `;
+}
+
+function flipCard() {
+  const card = document.getElementById('flashcard');
+  card.classList.toggle('flipped');
+  markToday();
+}
+
+function nextCard() {
+  flashIndex = (flashIndex + 1) % words.length;
+  renderFlashcards();
+}
+
+function prevCard() {
+  flashIndex = (flashIndex - 1 + words.length) % words.length;
+  renderFlashcards();
+}
+
+// ===== TRANSLATOR =====
+async function translateText() {
+  const text = document.getElementById('translate-input').value.trim();
+  if (!text) return;
+
+  const output = document.getElementById('translate-output');
+  output.className = 'translate-result';
+  output.textContent = '⏳ Переводим...';
+
+  try {
+    const response = await fetch(`${API}/translate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text }),
+    });
+    const data = await response.json();
+    const result = data.result;
+    output.textContent = result;
+
+    document.getElementById('save-row').style.display = 'flex';
+    const isRu = /[а-яё]/i.test(text);
+    document.getElementById('save-word-en').value = isRu ? result : text;
+    document.getElementById('save-word-ru').value = isRu ? text : result;
+
+  } catch(e) {
+    output.textContent = 'Ошибка перевода. Проверь подключение.';
+  }
+}
+
+async function saveFromTranslator() {
+  const en = document.getElementById('save-word-en').value.trim();
+  const ru = document.getElementById('save-word-ru').value.trim();
+  if (!en || !ru) return;
+
+  await fetch(`${API}/words`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ telegramId: TELEGRAM_ID, wordEn: en, wordRu: ru })
+  });
+  document.getElementById('save-row').style.display = 'none';
+  await loadData();
+  alert('Слово сохранено в словарь! 📖');
+}
+
+// ===== INIT =====
+loadData();
+</script>
+</body>
+</html>
